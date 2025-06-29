@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoMLX Dashboard</title>
+
+    <!-- DaisyUI and Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX for interactivity -->
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Apply the Inter font family */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for active tab using HTMX indicator */
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: inline;
+        }
+        .htmx-request.htmx-indicator {
+            display: inline;
+        }
+    </style>
+</head>
+<body class="bg-base-100 text-base-content min-h-screen transition-colors duration-300">
+
+<!-- Main Application Container -->
+<div id="app-container">
+
+    <!-- Navbar -->
+    <div class="navbar bg-base-200 shadow-md sticky top-0 z-50">
+        <div class="flex-1">
+            <a class="btn btn-ghost text-xl">GoMLX Dashboard</a>
+        </div>
+        <div class="flex-none">
+            <!-- Theme Switcher Dropdown -->
+            <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <span class="hidden sm:inline">Theme</span>
+                    <svg class="w-2.5 h-2.5 ms-2.5 hidden sm:inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                    </svg>
+                </div>
+                <ul tabindex="0" id="theme-menu" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32 mt-4">
+                    <li><a data-theme-value="light">Light</a></li>
+                    <li><a data-theme-value="dark">Dark</a></li>
+                    <li><a data-theme-value="system">System</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto p-4 md:p-8">
+
+        <!--
+          HTMX-powered Tabs.
+          Clicking a tab will send a GET request to the server.
+          The server should respond with the HTML content for that tab.
+          The response will replace the content of the #tab-content div.
+        -->
+        <div role="tablist" class="tabs tabs-lifted tabs-lg"
+             hx-target="#tab-content"
+             hx-indicator=".htmx-indicator">
+
+            <!--
+              In a Go template, you would dynamically generate these tabs.
+              For now, they are static placeholders.
+              The `hx-get` attribute would point to your Go server endpoints.
+              Example: hx-get="/tabs/progress"
+            -->
+            <a role="tab" class="tab tab-active" hx-get="/placeholder.html" hx-trigger="click, load">
+                Progress
+            </a>
+            <a role="tab" class="tab" hx-get="/placeholder.html">
+                Plots
+            </a>
+            <a role="tab" class="tab" hx-get="/placeholder.html">
+                Logs
+            </a>
+
+        </div>
+
+        <!-- Tab Content: This div will be updated by HTMX -->
+        <div id="tab-content" class="bg-base-200 p-6 rounded-b-box rounded-tr-box shadow-inner">
+            <!-- Placeholder content. Will be replaced by HTMX on tab click. -->
+            <div class="prose max-w-none">
+                <h2>Welcome to GoMLX Dashboard!</h2>
+                <p>Select a tab to view the training details.</p>
+                <span class="loading loading-dots loading-md htmx-indicator"></span>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Theme Controller Script -->
+<script>
+    (function() {
+        const html = document.documentElement;
+        const themeMenu = document.getElementById('theme-menu');
+
+        // Function to set the theme
+        const setTheme = (theme) => {
+            let effectiveTheme = theme;
+            if (theme === 'system') {
+                effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            html.setAttribute('data-theme', effectiveTheme);
+            localStorage.setItem('gomlx_theme', theme);
+        };
+
+        // Add click listeners to theme menu items
+        if (themeMenu) {
+            themeMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A') {
+                    const themeValue = e.target.getAttribute('data-theme-value');
+                    if(themeValue) {
+                        setTheme(themeValue);
+                    }
+                }
+            });
+        }
+
+        // Listen for changes in system theme
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            const savedTheme = localStorage.getItem('gomlx_theme') || 'system';
+            if (savedTheme === 'system') {
+                setTheme('system');
+            }
+        });
+
+        // Set initial theme on page load
+        const initialTheme = localStorage.getItem('gomlx_theme') || 'system';
+        setTheme(initialTheme);
+    })();
+
+    // Simple logic to handle active tab styling
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabContainer = document.querySelector('.tabs');
+        if(tabContainer) {
+            tabContainer.addEventListener('htmx:beforeRequest', (evt) => {
+                // Remove active class from all tabs
+                tabContainer.querySelectorAll('.tab').forEach(tab => tab.classList.remove('tab-active'));
+                // Add active class to the clicked tab
+                evt.detail.elt.classList.add('tab-active');
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

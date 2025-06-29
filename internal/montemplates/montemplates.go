@@ -1,4 +1,4 @@
-// Package templates parses HTML templates from a file tree and optionally monitors them for changes.
+// Package montemplates parses HTML templates from a file tree and optionally monitors them for changes.
 //
 // Copied from github.com/janpfeifer/monitored-templates.
 //
@@ -36,7 +36,7 @@
 //		}
 //		...
 //	}
-package templates
+package montemplates
 
 import (
 	"fmt"

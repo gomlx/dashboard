@@ -122,7 +122,7 @@ func (d *Dashboard) Stop() error {
 }
 
 // WithTemplates sets a path where to read the HTML (HTMX) templates for Dashboard.
-// Used only during development of Dashboard, or if you really want to customize the UI.
+// Used only during development of Dashboard or if you really want to customize the UI.
 func (d *Dashboard) WithTemplates(path string) *Dashboard {
 	d.templatesPath = path
 	return d
